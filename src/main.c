@@ -135,31 +135,32 @@ bool is_snake(int x,int y){
 }
 
 
-void create_trophy(struct trophy** trophy_ptr){
-    if (!trophy_ptr) return;  // Guard against NULL pointer
-    
-    *trophy_ptr = (struct trophy*)malloc(sizeof(struct trophy));
-    if (!*trophy_ptr) return;  // Guard against malloc failure
-    
-    (*trophy_ptr)->location = (struct box*)malloc(sizeof(struct box));
-    if (!(*trophy_ptr)->location) {  // Guard against malloc failure
-        free(*trophy_ptr);
-        *trophy_ptr = NULL;
-        return;
+struct trophy* create_trophy(void) {
+    struct trophy* new_trophy = (struct trophy*)malloc(sizeof(struct trophy));
+    if (!new_trophy) return NULL;
+
+    new_trophy->location = (struct box*)malloc(sizeof(struct box));
+    if (!new_trophy->location) {
+        free(new_trophy);
+        return NULL;
     }
-    
-    int x,y;
+
+    int x, y;
     srand(time(NULL));
     do {
         x = rand() % (LINES - 2) + 1;
         y = rand() % (COLS - 2) + 1;
-    } while(is_snake(x,y));
-    (*trophy_ptr)->location->row = x;
-    (*trophy_ptr)->location->col = y;
-    (*trophy_ptr)->seconds = (rand() % 8) + 2;  
-	(*trophy_ptr)->value = (rand() % 8) + 2;  // Random number between 2 and 9
-    move((*trophy_ptr)->location->row, (*trophy_ptr)->location->col);
-    addch('0' + (*trophy_ptr)->value);
+    } while (is_snake(x, y));
+
+    new_trophy->location->row = x;
+    new_trophy->location->col = y;
+    new_trophy->seconds = (rand() % 8) + 2;
+    new_trophy->value = (rand() % 8) + 2;
+
+    move(new_trophy->location->row, new_trophy->location->col);
+    addch('0' + new_trophy->value);
+
+    return new_trophy;
 }
 
 void delete_trophy(struct trophy* trophy) {
@@ -189,7 +190,7 @@ int main(){
 
 	while (1) {
 		if (!curr_trophy){
-			create_trophy(&curr_trophy);
+			curr_trophy = create_trophy();
 		}
         int ch = getch();        // This will check if a key is being pressed
         if (ch == 'e') {
@@ -251,7 +252,7 @@ int main(){
 			snakeSize += temp;  // Directly add the value instead of using a loop
 			delete_trophy(curr_trophy);
 			curr_trophy = NULL;  // Set to NULL after deletion
-			create_trophy(&curr_trophy);
+			curr_trophy = create_trophy();
 		}
 		if(curr_trophy && curr_trophy->seconds <= seconds){
 			delete_trophy(curr_trophy);
